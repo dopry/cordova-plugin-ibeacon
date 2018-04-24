@@ -7,7 +7,7 @@ version: 2
 aliases:    
   x-build-steps-android: &x-build-steps-android
     steps: 
-      # - run: sudo apt-get install gradle
+      - run: sudo apt-get install gradle
       - checkout
       - restore_cache: 
           keys:
@@ -22,13 +22,14 @@ aliases:
           # NOTE: https://cordova.apache.org/docs/en/latest/guide/platforms/android/ indiciates 6.x support ends with 
           # api level 25, android version 7.1.1, but seems to work with api-26 build infrastructure. 
           name: cordova-android@6.x build, api levels 16-25, android version 4.1-7.1.1
-          command: npx cordova-paramedic --cleanUpAfterRun --verbose --platform android@6.x --plugin "."
+          command: npx cordova-paramedic --cleanUpAfterRun --verbose --platform android@6.x --plugin "." --justbuild
       # save gradle cache after build, since it is populated during build. 
       # see: https://discuss.circleci.com/t/recommended-dependencies-caching-for-a-gradle-setup-is-wrong/20712
       - save_cache:
           key: gradle-{{ checksum "plugin.xml" }}-{{ checksum "src/android/cordova-plugin-ibeacon.gradle" }}-{{ arch }}
           paths:
-            - ~/.gradle
+            - ~/.gradle/caches
+            - ~/.gradle/wrapper
 
   x-build-steps-ios: &x-build-steps-ios
     steps:
@@ -76,7 +77,7 @@ jobs:
     <<: *x-build-steps-android
     docker:
       - image: circleci/android:api-25-node8-alpha
-
+   
   # Android 7.x Nougat
   build_android_24:
     <<: *x-build-steps-android
