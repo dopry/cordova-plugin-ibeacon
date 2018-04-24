@@ -22,7 +22,7 @@ aliases:
           # NOTE: https://cordova.apache.org/docs/en/latest/guide/platforms/android/ indiciates 6.x support ends with 
           # api level 25, android version 7.1.1, but seems to work with api-26 build infrastructure. 
           name: cordova-android@6.x build, api levels 16-25, android version 4.1-7.1.1
-          command: npx cordova-paramedic --cleanUpAfterRun --verbose --platform android@6.x --plugin "."  --justbuild
+          command: npx cordova-paramedic --cleanUpAfterRun --verbose --platform android@6.x --plugin "."
       # save gradle cache after build, since it is populated during build. 
       # see: https://discuss.circleci.com/t/recommended-dependencies-caching-for-a-gradle-setup-is-wrong/20712
       - save_cache:
