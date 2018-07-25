@@ -2,6 +2,14 @@
   "name": "com.unarin.cordova.beacon",
   "version": "3.6.1",
   "description": "Proximity Beacon Monitoring and Transmission Plugin (supporting iBeacons)",
+  "scripts": {
+    "test:android": "cordova-paramedic --plugin . --verbose --cleanUpAfterRun --platform android",
+    "test:android:7.1.0": "cordova-paramedic --plugin . --verbose --cleanUpAfterRun --platform android@7.1.0",
+    "test:android:6.3.0": "cordova-paramedic --plugin . --cleanUpAfterRun --verbose --platform android@6.3.0",
+    "test:browser": "cordova-paramedic --plugin . --cleanUpAfterRun --verbose --platform browser",
+    "test:ios": "cordova-paramedic --plugin . --cleanUpAfterRun --verbose --platform ios",
+    "test:windows": "cordova-paramedic --config .paramedic.windows.config.js"
+  },
   "cordova": {
     "id": "com.unarin.cordova.beacon",
     "platforms": [
@@ -36,6 +44,8 @@
   "homepage": "https://github.com/petermetz/cordova-plugin-ibeacon",
   "devDependencies": {
     "@commitlint/cli": "^7.0.0",
-    "@commitlint/config-conventional": "^7.0.1"
+    "@commitlint/config-conventional": "^7.0.1",
+    "cordova-paramedic": "^0.5.0",
+    "cordova-plugin-test-framework": "git+https://github.com/apache/cordova-plugin-test-framework.git"
   }
 }
