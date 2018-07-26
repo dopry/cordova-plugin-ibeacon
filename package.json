@@ -3,12 +3,8 @@
   "version": "3.6.1",
   "description": "Proximity Beacon Monitoring and Transmission Plugin (supporting iBeacons)",
   "scripts": {
-    "test:android": "cordova-paramedic --plugin . --verbose --cleanUpAfterRun --platform android",
-    "test:android:7.1.0": "cordova-paramedic --plugin . --verbose --cleanUpAfterRun --platform android@7.1.0",
-    "test:android:6.3.0": "cordova-paramedic --plugin . --cleanUpAfterRun --verbose --platform android@6.3.0",
-    "test:browser": "cordova-paramedic --plugin . --cleanUpAfterRun --verbose --platform browser",
-    "test:ios": "cordova-paramedic --plugin . --cleanUpAfterRun --verbose --platform ios",
-    "test:windows": "cordova-paramedic --config .paramedic.windows.config.js"
+    "test:android:latest": "cordova-paramedic --plugin . --platform android --cleanUpAfterRun --verbose",
+    "test:ios:latest": "cordova-paramedic --plugin . --platform ios --cleanUpAfterRun --verbose"
   },
   "cordova": {
     "id": "com.unarin.cordova.beacon",

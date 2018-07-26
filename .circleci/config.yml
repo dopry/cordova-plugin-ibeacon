@@ -2,6 +2,19 @@
 #
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
+
+# This build file implements a matrix build for cordova projects. 
+#
+# The build matrix has the following axes.
+#  1. cordova cli version: 8.0.0, 7.1.0, 7.0.1, 6.5.0) ( latest 3 major versions, with each most recent minor)
+#  2. platform: android, ios
+#  3. cordova platform version: 
+#     3.1 cordova-android (latest) 
+#     3.1 cordova-ios(latest)  
+#  4. platform os version: 
+#     4.1 android(23,24,25,26,27), intersection of circleci/android and cordova-android version supported api levels.
+#     4.2 ios(), TODO: Determine support range.
+
 version: 2
 
 aliases:
@@ -15,6 +28,47 @@ aliases:
       branches:
         only: master
 
+  x-build-android: &x-build-android
+    # Expects environment variables to be set on jobe which mixes in the alias. 
+    # ANDROID_API_LEVEL: 28 - informational, used in task name.
+    # CORDOVA_VERSION - cordova cli version
+    # CORDOVA_ANDROID_VERSION - cordova-android package version for testing. 
+    docker:
+      - image: dopry/circleci-cordova:${CORDOVA_VERSION}-${ANDROID_API_LEVEL}
+    steps: 
+      - run: sudo apt-get install gradle
+      - checkout
+      - restore_cache: 
+          keys:
+            - npm-{{ checksum "package.json" }}-{{ arch }}
+            - gradle-{{ checksum "plugin.xml" }}-{{ checksum "src/android/cordova-plugin-ibeacon.gradle" }}-{{ arch }}
+      - run: npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: npm-{{ checksum "package.json" }}-{{ arch }}
+
+      # work around missing gradlew for cordova - doesn't seem to work. 
+      - run: gradle wrapper
+      
+      # work around missing gradlew for cordova - based on https://github.com/eclipsesource/tabris-js/issues/1296
+      - run: wget https://dl.google.com/android/repository/tools_r25.2.3-macosx.zip
+      - run: unzip tools_r25.2.3-macosx.zip
+      - run: mv tools/templates /opt/android/sdk/tools/
+      - run: sdkmanager com.android.support:support-annotations android.arch.lifecycle:runtime
+
+      - run: 
+          # NOTE: https://cordova.apache.org/docs/en/latest/guide/platforms/android/ indiciates 6.x support ends with 
+          # api level 25, android version 7.1.1, but seems to work with api-26 build infrastructure. 
+          name: Test cordova-android@${PLATFORM_VERSION} on Android ${CORDOVA_VERSION} API Level ${ANDROID_API_LEVEL}
+          command: npm run test:android:${PLATFORM_VERSION:-latest}
+      # save gradle cache after build, since it is populated during build. 
+      # see: https://discuss.circleci.com/t/recommended-dependencies-caching-for-a-gradle-setup-is-wrong/20712
+      - save_cache:
+          key: gradle-{{ checksum "plugin.xml" }}-{{ checksum "src/android/cordova-plugin-ibeacon.gradle" }}-{{ arch }}
+          paths:
+            - ~/.gradle/caches
+            - ~/.gradle/wrapper
 
 jobs: 
   lint:
@@ -25,7 +79,6 @@ jobs:
       - restore_cache:
           keys:
           - npm-{{ checksum "package-lock.json" }}-{{ arch }}
-          - npm-
       - run: npm install
       - save_cache:
           paths:
@@ -38,14 +91,94 @@ jobs:
             npx commitlint --from ${LAST_TAG}  
 
 
+   #  android build job naming: build-android-cli_{cli version}-platform_{cordova-android version}-api_{api level}
+   #  cli version: 8.0.0, 7.1.0, 7.0.1, 6.5.0
+   #  platform(cordova-android) versions: latest ( do not specify version takes recommended release from npm )
+   #  api levels: 23,24,25,26,27
+
+  # cli 6.5.0
+  build-android-api_23-cli_6.5.0: 
+    environment:
+      CORDOVA_VERSION: 6.5.0
+      PLATFORM_VERSION: latest
+      ANDROID_API_LEVEL: 23 # Marshmallow 6.0
+    <<: *x-build-android
+  
+  build-android-api_24-cli_6.5.0:
+    environment:
+      CORDOVA_VERSION: 6.5.0
+      PLATFORM_VERSION: latest
+      ANDROID_API_LEVEL: 24 # Nougat 7.0
+    <<: *x-build-android
+  
+  build-android-api_25-cli_6.5.0:
+    environment:
+      CORDOVA_VERSION: 6.5.0
+      PLATFORM_VERSION: latest
+      ANDROID_API_LEVEL: 25 # Nougat 7.1
+    <<: *x-build-android
+
+  build-android-api_26-cli_6.5.0:
+    environment:
+      CORDOVA_VERSION: 6.5.0
+      PLATFORM_VERSION: latest
+      ANDROID_API_LEVEL: 26 # Oreo 8.0.0
+    <<: *x-build-android
+
+  build-android-api_27-cli_6.5.0:
+    environment:
+      CORDOVA_VERSION: 6.5.0
+      PLATFORM_VERSION: latest
+      ANDROID_API_LEVEL: 27 # Oreo 8.1.0
+    <<: *x-build-android
+
+
+  # cli 8.0.0
+  build-android-api_23-cli_8.0.0: 
+    environment:
+      CORDOVA_VERSION: 8.0.0
+      PLATFORM_VERSION: latest
+      ANDROID_API_LEVEL: 23 # Marshmallow 6.0
+    <<: *x-build-android
+  
+  build-android-api_24-cli_8.0.0:
+    environment:
+      CORDOVA_VERSION: 8.0.0
+      PLATFORM_VERSION: latest
+      ANDROID_API_LEVEL: 24 # Nougat 7.0
+    <<: *x-build-android
+  
+  build-android-api_25-cli_8.0.0:
+    environment:
+      CORDOVA_VERSION: 8.0.0
+      PLATFORM_VERSION: latest
+      ANDROID_API_LEVEL: 25 # Nougat 7.1
+    <<: *x-build-android
+
+  build-android-api_26-cli_8.0.0:
+    environment:
+      CORDOVA_VERSION: 8.0.0
+      PLATFORM_VERSION: latest
+      ANDROID_API_LEVEL: 26 # Oreo 8.0.0
+    <<: *x-build-android
+
+  build-android-api_27-cli_8.0.0:
+    environment:
+      CORDOVA_VERSION: 8.0.0
+      PLATFORM_VERSION: latest
+      ANDROID_API_LEVEL: 27 # Oreo 8.1.0
+    <<: *x-build-android
+
 workflows:
   version: 2
-  pullrequest:
+  qa:
     jobs:
-      - lint:
-          <<: *x-ignore-master
-
-  master: 
-    jobs: 
-      - lint:
-          <<: *x-only-master
+      - lint
+      - build-android-api_27-cli_8.0.0:
+          requires: 
+            - lint
+      
+      - build-android-api_27-cli_6.5.0:
+          requires: 
+            - lint
+     
